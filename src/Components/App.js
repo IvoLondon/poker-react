@@ -9,7 +9,6 @@ import { Card, PlayerHand, Button, Footer } from "../Styles/Styled";
 class App extends Component {
 	constructor() {
 		super();
-		this.cardsHolder = [];
 		this.state = {
 			players : [
 				{
@@ -34,19 +33,22 @@ class App extends Component {
 	}
 
 	dealCardsHandler = () => {
+		this.cardsHolder = [];
+
 		const newState = { ...this.state }
 		const playersList = [ ...newState.players ]
 
 		playersList.map((player, idx) => {
-		const cardsList = [...playersList[idx].cardsInHand]; 
+			//Return cards
+			const cardsList = []; 
 
+			//Deal new cards
 			for(let i = 0; i < 5; i++) {
 				cardsList.push(this.createCard());
 			}
 			playersList[idx].cardsInHand = cardsList;
 		})
 
-		console.log(playersList);
 		this.setState({
 			players : playersList
 		})
@@ -99,8 +101,10 @@ class App extends Component {
 	    
 		this.setState({
 			players : newState.players.concat([newPlayer]),
+		}, () => {
+			this.dealCardsHandler();
 		})
-		this.dealCardsHandler();
+		
 	}
 	removePlayerHandler = (id) => {
 		const player = {...id}
