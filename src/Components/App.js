@@ -5,6 +5,7 @@ import { suits, values } from "../utils";
 import Layout from "./Layout";
 import Deck from "./Deck";
 import Modal from "./Modal";
+import Player from "./Player"
 import { Card, PlayerHand, Button, Footer } from "../Styles/Styled";
 
 import poker from 'poker-hands';
@@ -116,13 +117,19 @@ class App extends Component {
 		})
 		
 	}
-	removePlayerHandler = (id) => {
-		const player = {...id}
+	removePlayerHandler = (ev) => {
+
+		// Get player and current state
+		const id = ev.currentTarget.dataset.player;
+		const player = {...this.state.players[this.state.players.findIndex(p => p.id == id)]}
 		const newState = { ...this.state }
+
 		if(newState.players.length <= 2) {
 			alert('Maximum number of 2 players is reached')
 			return
 		}
+
+		// Remove player from array
 		const playersList = newState.players.concat();
 		for (var i=0; i < playersList.length; i++) {
 	        if (playersList[i].id === player.id) {
@@ -133,10 +140,16 @@ class App extends Component {
 	    	players : playersList
 	    })
 	}
-	editPlayerHandler = (id) => {
-		const player = { ...id }
+	editPlayerHandler = (ev) => {
+		const id = ev.currentTarget.dataset.player;
+		const player = { ...this.state.players[this.state.players.findIndex(p => p.id == id)] }
+
+		// Get current state
 		const newState = { ...this.state }
 		const playersList = [...newState.players];
+		
+
+		// Change editmode
 		for (var i=0; i < playersList.length; i++) {
 	        if (playersList[i].id === player.id) {
 	        	playersList[i].editMode = !player.editMode;
@@ -146,16 +159,19 @@ class App extends Component {
 			players : playersList,
 		})
 	}
-	enterPlayerNameHandler = (event, id) => {
-		const player = { ...id }
-		player.name = event.target.value;
+
+	enterPlayerNameHandler = (ev) => {
+		const id = ev.currentTarget.dataset.player;
+		const player = { ...this.state.players[this.state.players.findIndex(p => p.id == id)] }
+
+		// Get current state
 		const newState = { ...this.state }
 		const playersList = [...newState.players];
 
-
+		// Find player and compare val
 		for (var i=0; i < playersList.length; i++) {
 	        if (playersList[i].id === player.id) {
-	        	playersList[i].name = event.target.value;
+	        	playersList[i].name = ev.target.value;
 	        }
 	    }
 	    this.setState({
@@ -183,6 +199,7 @@ class App extends Component {
 			}
 		}
 
+		// Set winner message
 		if(poker.hasRoyalFlush(winChallenger)){
 			winnerHandMessage = 'Royal Flush';
 		} else if(poker.hasStraightFlush(winChallenger)) {
@@ -216,29 +233,10 @@ class App extends Component {
 		if(this.state.players) {
 			players = this.state.players.map(player => {
 				return (
-					<article key={player.id}>
-						<p>
-							{player.editMode ? <input value={player.name} onChange={(event) => this.enterPlayerNameHandler.call(this, event, player)} /> : player.name}
-							
-							<Button onClick={() => this.editPlayerHandler.call(this, player)}>
-								<span role="img" alt="pencil" aria-label="pencil">✏️</span>
-								{player.editMode ? 'Confirm' : 'Edit'}
-							</Button>
-							<Button onClick={() => this.removePlayerHandler.call(this, player)}>
-								<span role="img" alt="flame" aria-label="flame">🔥</span>
-								Remove
-							</Button>
-						</p>
-						<PlayerHand>
-							{player.cardsInHand.map((card) => {
-								return (
-									<Card key={card.suit+card.value} suit={card.suit} value={card.value} selected={true}>
-										{card.value}
-									</Card>
-								)
-							})}
-						</PlayerHand>
-					</article>
+					<Player key={player.id} player={player}
+							remove={this.removePlayerHandler}
+							editMode={this.editPlayerHandler}
+							editName={this.enterPlayerNameHandler} />
 				)
 			})
 		}
