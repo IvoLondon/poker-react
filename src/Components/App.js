@@ -6,13 +6,14 @@ import Layout from "./Layout";
 import Deck from "./Deck";
 import Modal from "./Modal";
 import Player from "./Player"
-import { Card, PlayerHand, Button, Footer } from "../Styles/Styled";
+import { Button, Footer } from "../Styles/Styled";
 
 import poker from 'poker-hands';
 
 class App extends Component {
 	constructor() {
 		super();
+		this.cardsHolder = [];
 		this.state = {
 			players : [
 				{
@@ -38,12 +39,12 @@ class App extends Component {
 	}
 
 	dealCardsHandler = () => {
-		this.cardsHolder = [];
-
+		
 		const newState = { ...this.state }
 		const playersList = [ ...newState.players ]
 
 		//Clear cards in came
+		this.cardsHolder = [];
 		this.setState({
 			cardsInGame : [],
 			msgModal : null,
@@ -57,9 +58,10 @@ class App extends Component {
 			for(let i = 0; i < 5; i++) {
 				cardsList.push(this.createCard());
 			}
-			playersList[idx].cardsInHand = cardsList;
+			return playersList[idx].cardsInHand = cardsList;
 		})
 
+		//Set new cards in hands
 		this.setState({
 			players : playersList
 		})
@@ -121,7 +123,7 @@ class App extends Component {
 
 		// Get player and current state
 		const id = ev.currentTarget.dataset.player;
-		const player = {...this.state.players[this.state.players.findIndex(p => p.id == id)]}
+		const player = {...this.state.players[this.state.players.findIndex(p => p.id === parseInt(id))]}
 		const newState = { ...this.state }
 
 		if(newState.players.length <= 2) {
@@ -142,7 +144,7 @@ class App extends Component {
 	}
 	editPlayerHandler = (ev) => {
 		const id = ev.currentTarget.dataset.player;
-		const player = { ...this.state.players[this.state.players.findIndex(p => p.id == id)] }
+		const player = { ...this.state.players[this.state.players.findIndex(p => p.id === parseInt(id))] }
 
 		// Get current state
 		const newState = { ...this.state }
@@ -162,7 +164,7 @@ class App extends Component {
 
 	enterPlayerNameHandler = (ev) => {
 		const id = ev.currentTarget.dataset.player;
-		const player = { ...this.state.players[this.state.players.findIndex(p => p.id == id)] }
+		const player = { ...this.state.players[this.state.players.findIndex(p => p.id === parseInt(id))] }
 
 		// Get current state
 		const newState = { ...this.state }
@@ -182,15 +184,17 @@ class App extends Component {
 		let collectHands = [];
 		let winnerHandMessage;
 
+		// Get hands into a string item
 		this.state.players.map(player => {
 			let playerHand = [];
 			player.cardsInHand.map(hand => {
 				const getHand = hand.value+hand.suit;			
-					playerHand.push(getHand);
+					return playerHand.push(getHand);
 			})
-			collectHands.push(playerHand.join(' '));
+			return collectHands.push(playerHand.join(' '));
 		})
 
+		// Challenge cards
 		let winChallenger = collectHands[0];
 		for(let i=1; i < collectHands.length; i++) {
 			const duel = [winChallenger, collectHands[i]];
@@ -223,7 +227,7 @@ class App extends Component {
 		}
 
 		this.setState({
-			msgModal : 'The winner is ' + this.state.players[collectHands.findIndex(hnd => hnd == winChallenger)].name + ' with a ' + winnerHandMessage,
+			msgModal : 'The winner is ' + this.state.players[collectHands.findIndex(hnd => hnd === winChallenger)].name + ' with a ' + winnerHandMessage,
 		})
 	}
 
