@@ -96,3 +96,40 @@ export const PlayerHand = styled.div`
 	border-radius: 5px;
 	min-height: 55px;
 `;
+
+
+export const BackDrop = styled.div`
+	background: rgba(0,0,0,0.7);
+	position:fixed;
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
+	z-index:99;
+`;
+
+export const Dialogue = styled.div`
+	background: #D8D8D8;
+	position:absolute;
+	top:50%;
+	left:50%;
+	max-width:300px;
+	width:100%;
+	padding:50px;
+	transform:translate(-50%, -50%);
+	z-index:999;
+	color:#050505;
+	text-align:center;
+`;
+
+export const ButtonDialogue = styled.button`
+	background: transparent;
+	border: 1px solid #050505;
+	border-radius: 5px;
+	color: #050505;
+	padding: .5em;
+
+	& + & {
+		margin-left: 20px;
+	}
+`

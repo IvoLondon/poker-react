@@ -4,7 +4,10 @@ import { suits, values } from "../utils";
 
 import Layout from "./Layout";
 import Deck from "./Deck";
+import Modal from "./Modal";
 import { Card, PlayerHand, Button, Footer } from "../Styles/Styled";
+
+import poker from 'poker-hands';
 
 class App extends Component {
 	constructor() {
@@ -25,6 +28,7 @@ class App extends Component {
 				}
 			],
 			cardsInGame : [],
+			msgModal : null,
 		}
 	}
 
@@ -37,6 +41,12 @@ class App extends Component {
 
 		const newState = { ...this.state }
 		const playersList = [ ...newState.players ]
+
+		//Clear cards in came
+		this.setState({
+			cardsInGame : [],
+			msgModal : null,
+		})
 
 		playersList.map((player, idx) => {
 			//Return cards
@@ -54,6 +64,7 @@ class App extends Component {
 		})
 	}
 	createCard() {
+		//creates a cards
 		let cardValue = values[Math.random() * values.length | 0];
 		let cardSuit = suits[Math.random() * suits.length | 0];
 		let card = cardValue+cardSuit;
@@ -63,7 +74,7 @@ class App extends Component {
 		});
 
 		if(checkCard === undefined) {
-
+			//if card is unique on table
 			this.cardsHolder.push(card);
 			this.setState(prevState => ({
 				cardsInGame : [ ...prevState.cardsInGame, card]
@@ -72,9 +83,8 @@ class App extends Component {
 				value : cardValue,
 				suit : cardSuit
 			}
-			
 		} else {
-			console.log('duplicate, create new', card)
+			//if card exist on table
 			return this.createCard();
 		}		
 	}
@@ -152,81 +162,116 @@ class App extends Component {
 			players : playersList,
 		})
 	}
-
-
-
 	checkWinnerHandler = () => {
-		
-		
+		let collectHands = [];
+		let winnerHandMessage;
+
+		this.state.players.map(player => {
+			let playerHand = [];
+			player.cardsInHand.map(hand => {
+				const getHand = hand.value+hand.suit;			
+					playerHand.push(getHand);
+			})
+			collectHands.push(playerHand.join(' '));
+		})
+
+		let winChallenger = collectHands[0];
+		for(let i=1; i < collectHands.length; i++) {
+			const duel = [winChallenger, collectHands[i]];
+			if(poker.judgeWinner(duel)){
+				winChallenger = collectHands[i];
+			}
+		}
+
+		if(poker.hasRoyalFlush(winChallenger)){
+			winnerHandMessage = 'Royal Flush';
+		} else if(poker.hasStraightFlush(winChallenger)) {
+			winnerHandMessage = 'Straight Flush';
+		} else if(poker.hasFourOfAKind(winChallenger)) {
+			winnerHandMessage = 'Four of a kind';
+		} else if(poker.hasFullHouse(winChallenger)) {
+			winnerHandMessage = 'Full House';
+		} else if(poker.hasFlush(winChallenger)) {
+			winnerHandMessage = 'Flush';
+		} else if(poker.hasStraight(winChallenger)) {
+			winnerHandMessage = 'Straight';
+		} else if(poker.hasThreeOfAKind(winChallenger)) {
+			winnerHandMessage = 'Three of a kind';
+		} else if(poker.hasTwoPairs(winChallenger)) {
+			winnerHandMessage = 'Two pair';
+		} else if(poker.hasPair(winChallenger)) {
+			winnerHandMessage = 'Single pair';
+		} else {
+			winnerHandMessage = 'High card';
+		}
+
+		this.setState({
+			msgModal : 'The winner is ' + this.state.players[collectHands.findIndex(hnd => hnd == winChallenger)].name + ' with a ' + winnerHandMessage,
+		})
 	}
 
 	render() {
 		let players = null;
+
 		if(this.state.players) {
 			players = this.state.players.map(player => {
 				return (
-				
-				<article key={player.id}>
-					<p>
-						{player.editMode ? <input value={player.name} onChange={(event) => this.enterPlayerNameHandler.call(this, event, player)} /> : player.name}
-						
-						<Button onClick={() => this.editPlayerHandler.call(this, player)}>
-							<span role="img" alt="pencil" aria-label="pencil">✏️</span>
-							{player.editMode ? 'Confirm' : 'Edit'}
-						</Button>
-						<Button onClick={() => this.removePlayerHandler.call(this, player)}>
-							<span role="img" alt="flame" aria-label="flame">🔥</span>
-							Remove
-						</Button>
-					</p>
-					<PlayerHand>
-						{player.cardsInHand.map((card) => {
-							return (
-								<Card key={card.suit+card.value} suit={card.suit} value={card.value} selected={true}>
-									{card.value}
-								</Card>
-							)
-						})}
-					</PlayerHand>
-				</article>
+					<article key={player.id}>
+						<p>
+							{player.editMode ? <input value={player.name} onChange={(event) => this.enterPlayerNameHandler.call(this, event, player)} /> : player.name}
+							
+							<Button onClick={() => this.editPlayerHandler.call(this, player)}>
+								<span role="img" alt="pencil" aria-label="pencil">✏️</span>
+								{player.editMode ? 'Confirm' : 'Edit'}
+							</Button>
+							<Button onClick={() => this.removePlayerHandler.call(this, player)}>
+								<span role="img" alt="flame" aria-label="flame">🔥</span>
+								Remove
+							</Button>
+						</p>
+						<PlayerHand>
+							{player.cardsInHand.map((card) => {
+								return (
+									<Card key={card.suit+card.value} suit={card.suit} value={card.value} selected={true}>
+										{card.value}
+									</Card>
+								)
+							})}
+						</PlayerHand>
+					</article>
 				)
-				
 			})
 		}
-
+		
 		return (
 				<Layout>
-
+					
 					<section>
 						<h1>
 						Cards deck
 						</h1>
-						<Deck suits={suits} values={values} />
+						<Deck played={this.state.cardsInGame} suits={suits} values={values} />
+						
 					</section>
 					<section>
 						<header>
 							<h1>Players</h1>
 						</header>
-
-
 						<section>
-							
 							{players}
-
-							
 						</section>
 						<Footer>
 								<Button onClick={() => this.addPlayerHandler()}>
 									<span role="img" alt="woman raising hand" aria-label="woman raising hand">🙋‍♀️</span>
 									Add new player
 								</Button>
-								<Button onClick={() => this.dealCardsHandler()}>
+								<Button onClick={() => this.checkWinnerHandler()}>
 									<span role="img" alt="trophy" aria-label="trophy">🏆</span>
 									Find the winner
 								</Button>
 						</Footer>
 					</section>
-
+					{ this.state.msgModal ? <Modal message={this.state.msgModal} reset={this.dealCardsHandler} /> : null }
 				</Layout>
 		);
 	}
