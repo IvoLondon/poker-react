@@ -8,7 +8,7 @@ const Deck = ({ played, suits, values }) => (
 			<div key={suit}>
 				{values.map(value => {
 					return (
-						<Card key={suit+value} suit={suit} value={value} { ...played.indexOf(value+suit) > -1 ? {selected : true} : null} >
+						<Card key={suit+value} suit={suit} value={value} { ...played.indexOf(value+suit) > -1 ? null : {selected : true}} >
 							{value}
 						</Card>
 					)

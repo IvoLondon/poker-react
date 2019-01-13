@@ -18,8 +18,8 @@ const Player = (props) => (
 		<PlayerHand>
 			{props.player.cardsInHand.map((card) => {
 				return (
-					<Card key={card.suit+card.value} suit={card.suit} value={card.value} selected={true}>
-						{card.value}
+					<Card key={card} suit={card.charAt(1)} value={card.charAt(0)}>
+						{card.charAt(0)}
 					</Card>
 				)
 			})}

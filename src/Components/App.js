@@ -13,7 +13,7 @@ import poker from 'poker-hands';
 class App extends Component {
 	constructor() {
 		super();
-		this.cardsHolder = [];
+		this.cardsDeck = [];
 		this.state = {
 			players : [
 				{
@@ -39,16 +39,27 @@ class App extends Component {
 	}
 
 	dealCardsHandler = () => {
+
+		// Create deck
+		this.cardsDeck = [];
+		for(let suit in suits) {
+			for(let value in values) {
+				this.cardsDeck.push(`${values[value]}${suits[suit]}`)
+			}
+		}
 		
+		// Shuffle deck
+		let m = this.cardsDeck.length, i;
+		while(m) {
+			i = Math.floor(Math.random() * m--);
+			[this.cardsDeck[m], this.cardsDeck[i]] = [this.cardsDeck[i], this.cardsDeck[m]];
+		}
+
+		//Get current state
 		const newState = { ...this.state }
 		const playersList = [ ...newState.players ]
 
 		//Clear cards in came
-		this.cardsHolder = [];
-		this.setState({
-			cardsInGame : [],
-			msgModal : null,
-		})
 
 		playersList.map((player, idx) => {
 			//Return cards
@@ -56,40 +67,18 @@ class App extends Component {
 
 			//Deal new cards
 			for(let i = 0; i < 5; i++) {
-				cardsList.push(this.createCard());
+				const getCard = this.cardsDeck.pop();
+				cardsList.push(getCard);
 			}
 			return playersList[idx].cardsInHand = cardsList;
 		})
 
 		//Set new cards in hands
 		this.setState({
-			players : playersList
+			cardsInGame : this.cardsDeck,
+			players : playersList,
+			msgModal : null,
 		})
-	}
-	createCard() {
-		//creates a cards
-		let cardValue = values[Math.random() * values.length | 0];
-		let cardSuit = suits[Math.random() * suits.length | 0];
-		let card = cardValue+cardSuit;
-
-		let checkCard = this.cardsHolder.find((cardIn) => { 
-			return cardIn === card;
-		});
-
-		if(checkCard === undefined) {
-			//if card is unique on table
-			this.cardsHolder.push(card);
-			this.setState(prevState => ({
-				cardsInGame : [ ...prevState.cardsInGame, card]
-			}))
-			return {
-				value : cardValue,
-				suit : cardSuit
-			}
-		} else {
-			//if card exist on table
-			return this.createCard();
-		}		
 	}
 
 	addPlayerHandler = () => {
@@ -187,9 +176,8 @@ class App extends Component {
 		// Get hands into a string item
 		this.state.players.map(player => {
 			let playerHand = [];
-			player.cardsInHand.map(hand => {
-				const getHand = hand.value+hand.suit;			
-					return playerHand.push(getHand);
+			player.cardsInHand.map(hand => {		
+					return playerHand.push(hand);
 			})
 			return collectHands.push(playerHand.join(' '));
 		})
@@ -244,7 +232,6 @@ class App extends Component {
 				)
 			})
 		}
-		
 		return (
 				<Layout>
 					
